@@ -53,7 +53,7 @@
         }
     }, false)
 
-    document.body.addEventListener('touchstart', e=>{
+    document.addEventListener('touchstart', e=>{
         if(e.touches.length === ConsoleLogConfig.fingerNum) {
             consoleNodeWrapper.style.display = 'block'
             consoleItemWrap.scrollTop = 999999
