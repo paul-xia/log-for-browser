@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>demo</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+	<style type="text/css">
+		.console-wrapper{ position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999999; font-family: 'Source Sans Pro', 'Lucida Grande', sans-serif; font-size: 12px;}
+		.console-mask{position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000; opacity: 0.3;}
+		.console-plug-wrap{position: absolute; z-index: 2; bottom: 0; left: 0; right: 0; background-color: #fff; }
+		.console-items,.console-networks{ max-height: 20em; min-height: 5em; overflow: hidden;  overflow-y: auto; -webkit-overflow-scrolling : touch;}
+		.console-item{border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; margin-bottom: -1px; word-break: break-all;}
+		.console-date{color: #0089ff;}
+		.console-type-error{ color: red; background-color: #fff0f0; border-top-color: #fed7d8; border-bottom-color: #fed7d8; position: relative; z-index: 1;}
+		.console-inline{padding-right: 0.5em;}
+		.console-number{ color: rgb(29, 14, 204); }
+		.console-table-wrap{padding: 5px;}
+		.console-table{ width: 100%; background-color: #fff; border:1px solid #aaa; text-align: left; border-collapse: collapse; border-spacing: 0;}
+		.console-th{background-color: #f3f3f3; font-weight: normal;}
+		.console-tr:nth-child(2n+1){background-color: #f2f7fd;}
+		.console-th, .console-td, .console-tr{border: 1px solid #aaa; border-spacing:0}
+		.console-type-warn{ background-color: #fffbe7; border-top-color: #fff5c4; border-bottom-color: #fff5c4; color: #5b3a07; position: relative; z-index: 1;}
+		.console-tab-bar{ line-height: 25px; background-color: #f3f3f3; border-bottom: 1px solid #b6b4b6; border-top: 1px solid #b6b4b6;}
+		.console-tab{display: inline-block; padding: 0 10px; border-bottom: 1px solid #b6b4b6; margin-bottom: -1px;}
+		.console-tab-current{border-bottom-color: #9abcf3; position: relative; z-index: 1; background-color: #e5e5e5;}
+		.console-input-wrap{ position: relative; font-size: 0; border-top: 1px solid #b6b4b6;}
+		.console-pre-code{ position: absolute; left: 0; top: 50%; transform: translate(0, -50%); -webkit-transform: translate(0, -50%); font-size: 12px;}
+		.console-text-input{border:0 none; width: 100%; padding-left: 1em; font-size: 12px;}
+	</style>
+</head>
+<body>
+	开始你的表演
+	<script type="text/javascript" src="log.js"></script>
+	<script type="text/javascript">
+		console.assert(false, 'this is assert message')
+		console.count()
+		console.count()
+		console.count()
+
+		console.debug('this is a debug message')
+		console.dir(document.body)
+		console.error('this is an error message')
+		console.log('this i a log message', 1, 2,3, {a:1})
+		console.table([{a:1,b:2}, {a:1, c:2, e: {a:1, p:2}}])
+		console.table({a:1,b:2, c: {s:1, o:2, f:3}})
+		console.time('mark_time')
+
+		setTimeout(function(){
+			console.timeEnd('mark_time')
+			console.warn('this is a warn info')
+		}, 1500)
+	</script>
+		<script type="text/javascript">
+var xmlhttp;
+loadXMLDoc('http://www.aprildata.cn/backend/v2/consultation/list')
+loadXMLDoc('http://s.sdasdasdadadad.cn/backend/v2/consultation/list')
+loadXMLDoc('http://www.aprildata.cn/backend/v2/consultation/list')
+function loadXMLDoc(url){
+xmlhttp=null;
+if (window.XMLHttpRequest)
+  {// code for all new browsers
+  xmlhttp=new XMLHttpRequest();
+  }
+else if (window.ActiveXObject)
+  {// code for IE5 and IE6
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+if (xmlhttp!=null)
+  {
+  xmlhttp.onreadystatechange=state_Change;
+  xmlhttp.open("GET",url,true);
+  xmlhttp.send(null);
+  }
+else
+  {
+  alert("Your browser does not support XMLHTTP.");
+  }
+}
+
+function state_Change()
+{
+if (xmlhttp.readyState==4)
+  {// 4 = "loaded"
+  if (xmlhttp.status==200)
+    {// 200 = OK
+    // ...our code here...
+    }
+  else
+    {
+    //alert("Problem retrieving XML data");
+    }
+  }
+}
+</script>
+</body>
+</html>
