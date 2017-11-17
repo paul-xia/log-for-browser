@@ -158,8 +158,6 @@
             fakeRequest.responseText = request.responseText
             fakeRequest.responseType = request.responseType
             fakeRequest.statusText = request.statusText
-            fakeRequest.responseType = request.responseType
-            fakeRequest.responseType = request.responseType
             if (fakeRequest.status >= 200 && fakeRequest.status < 300) {
                 consoleNetworkCreater.apply({}, [fakeRequest.responseURL, fakeRequest.responseXML, fakeRequest.responseText])
             } else {
