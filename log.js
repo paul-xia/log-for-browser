@@ -1,7 +1,7 @@
 (function(factory) {
-    let ConsoleLogConfig = Object.assign({
-        fingerNum: 5
-    }, window.ConsoleLogConfig)
+    let ConsoleLogConfig = {
+        fingerNum: window.ConsoleLogConfig ? window.ConsoleLogConfig.fingerNum : 5
+    }
     let console = window.console
     let diffAssert = console.assert
     let diffCount = console.count
@@ -19,10 +19,37 @@
     let consoleNodeWrapper = domCreater('console-wrapper')
     let consoleMask = domCreater('console-mask')
     let consolePlugWrap = domCreater('console-plug-wrap')
-    let consoleItemWrap = domCreater('console-items')
-    let consoleNetworkWrap = domCreater('console-networks')
+    let consoleItemWrap = domCreater('console-items console-items-wrap')
+    let consoleNetworkWrap = domCreater('console-networks console-items-wrap')
+    let consoleLocalstorageWrap = domCreater('console-localstorage console-items-wrap')
+    let consoleSessionStorageWrap = domCreater('console-sessionstorage console-items-wrap')
+    let consoleCookieWrap = domCreater('console-cookies console-items-wrap')
     let consoleTabBar = domCreater('console-tab-bar')
     let consoleInputWrap = domCreater('console-input-wrap')
+
+    let Cookie = {
+        get:function(key){
+            let getCookie = document.cookie.replace(/[ ]/g, '')
+            if(!getCookie) {
+                if(key) return ''
+                return {}
+            }
+            let arrCookie = getCookie.split(';')
+            let cookieObj = {}
+            for(let i = 0; i < arrCookie.length; i++){
+                let arr = arrCookie[i].split('=')
+                cookieObj[arr[0]] = arr[1]
+            }
+            if(key) return cookieObj[k]
+            return cookieObj
+        },
+        delete:function(key){
+            let date = new Date()
+            date.setTime(date.getTime()-10000)
+            document.cookie = key + '=v; expires =' + date.toGMTString()
+            return key
+        }
+    }
 
     consoleNodeWrapper.style.display = 'none'
 
@@ -30,26 +57,60 @@
     consolePlugWrap.appendChild(consoleTabBar)
     consolePlugWrap.appendChild(consoleItemWrap)
     consolePlugWrap.appendChild(consoleNetworkWrap)
+    consolePlugWrap.appendChild(consoleLocalstorageWrap)
+    consolePlugWrap.appendChild(consoleSessionStorageWrap)
+    consolePlugWrap.appendChild(consoleCookieWrap)
     consolePlugWrap.appendChild(consoleInputWrap)
     consoleNodeWrapper.appendChild(consolePlugWrap)
     document.body.appendChild(consoleNodeWrapper)
-    consoleNetworkWrap.style.display = 'none'
 
-    consoleTabBar.innerHTML = '<span class="console-tab console-tab-current">Console</span><span class="console-tab">Network</span>'
+    consoleNetworkWrap.style.display = 'none'
+    consoleLocalstorageWrap.style.display = 'none'
+    consoleSessionStorageWrap.style.display = 'none'
+    consoleCookieWrap.style.display = 'none'
+
+    consoleTabBar.innerHTML = '<span class="console-tab console-tab-current">Console</span><span class="console-tab">Network</span><span class="console-tab">Localstorage</span><span class="console-tab">Sessionstorage</span><span class="console-tab">Cookies</span>'
     consoleInputWrap.innerHTML = '<svg class="console-pre-code" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1292"><path d="M329.525 191.547l56.285-58.261 393.996 392.021-393.996 392.021-56.285-58.261 331.786-333.761z" fill="#333333" p-id="1293"></path></svg><input class="console-text-input">'
 
     consoleTabBar.addEventListener('click', e=>{
         consoleTabBar.querySelector('.console-tab-current').className = 'console-tab'
         let text = e.target.innerText
         e.target.className = 'console-tab console-tab-current'
+        consoleNodeWrapper.querySelectorAll('.console-items-wrap').forEach(node=>{
+            node.style.display = 'none'
+        })
+        consoleInputWrap.style.display = 'none'
         if(text === 'Console') {
             consoleItemWrap.style.display = 'block'
             consoleItemWrap.scrollTop = 999999
-            consoleNetworkWrap.style.display = 'none'
-        } else {
-            consoleItemWrap.style.display = 'none'
+            consoleInputWrap.style.display = 'block'
+        } else if(text === 'Network'){
             consoleNetworkWrap.style.display = 'block'
             consoleNetworkWrap.scrollTop = 999999
+        } else if(text === 'Localstorage') {
+            consoleLocalstorageWrap.innerHTML = ''
+            consoleLocalstorageWrap.style.display = 'block'
+            tableCreater(localStorage, consoleLocalstorageWrap, function(tr, trele){
+                localStorage.removeItem(tr[0])
+                trele.remove()
+            })
+            consoleLocalstorageWrap.scrollTop = 999999
+        } else if(text === 'Sessionstorage') {
+            consoleSessionStorageWrap.innerHTML = ''
+            consoleSessionStorageWrap.style.display = 'block'
+            tableCreater(sessionStorage, consoleSessionStorageWrap, function(tr, trele){
+                sessionStorage.removeItem(tr[0])
+                trele.remove()
+            })
+            consoleSessionStorageWrap.scrollTop = 999999
+        } else if(text === 'Cookies') {
+            consoleCookieWrap.innerHTML = ''
+            consoleCookieWrap.style.display = 'block'
+            tableCreater(Cookie.get(), consoleCookieWrap, function(tr, trele){
+                Cookie.delete(tr[0])
+                trele.remove()
+            })
+            consoleCookieWrap.scrollTop = 999999
         }
     }, false)
 
@@ -66,10 +127,14 @@
     }, false)
     let input = consoleInputWrap.querySelector('input')
     input.addEventListener('keydown', e=>{
-        if(e.keyCode !== 13) return
+        if(e.keyCode !== 13 || input.value === '') return
         let text = input.value
-        let fun = new Function('console.log('+text+')')
-        fun()
+        try{
+            let fun = new Function('console.log("'+text+'"), console.log('+text+')')
+            fun()
+        } catch(err) {
+            console.error(text + '\n' + err.message + '\n' + err.stack)
+        }
         input.value = ''
     }, false)
 
@@ -107,7 +172,7 @@
     }
 
     console.table = function(obj){
-        tableCreater(obj)
+        tableCreater(obj, consoleItemWrap)
         diffTable.apply(window, arguments)
     }
 
@@ -138,35 +203,27 @@
     }
 
     factory.XMLHttpRequest = function(){
+
         let request = new diffXMLHttpRequest()
-        console.log(request)
-        let diffOpen = request.open
-        let diffSend = request.send
+        let XMLHttpRequestOpen = request.__proto__.open
+        let XMLHttpRequestSend = request.__proto__.send
+        let reqArg = []
         request.open = function(){
-            consoleNetworkCreater.apply({}, arguments)
-            diffOpen.apply(request, arguments)
+            reqArg = arguments
+            XMLHttpRequestOpen.apply(request, arguments)
         }
         request.send = function(){
-            diffSend.apply(request, arguments)
+            XMLHttpRequestSend.apply(request, arguments)
         }
-        request.onreadystatechange = function(){
-            fakeRequest.readyState = request.readyState
-            fakeRequest.status = request.status
-            fakeRequest.responseXML = request.responseXML
-            fakeRequest.responseURL = request.responseURL
-            fakeRequest.response = request.response
-            fakeRequest.responseText = request.responseText
-            fakeRequest.responseType = request.responseType
-            fakeRequest.statusText = request.statusText
-            if (fakeRequest.status >= 200 && fakeRequest.status < 300) {
-                consoleNetworkCreater.apply({}, [fakeRequest.responseURL, fakeRequest.responseXML, fakeRequest.responseText])
+        request.addEventListener('readystatechange', ()=>{
+            if(request.readyState !== 4) return
+            if (request.status >= 200 && request.status < 300) {
+                consoleNetworkCreater.apply({}, [reqArg[0], reqArg[1], request.responseText])
             } else {
-                consoleNetworkCreater.apply({classType: 'error'}, [request.status === 0 ? '网络错误' : '未知错误'])
+                consoleNetworkCreater.apply({classType: 'error'}, [reqArg[0], reqArg[1], request.status === 0 ? '网络错误' : '未知错误'])
             }
-            
-        }
-        let fakeRequest = Object.assign({}, request)
-        return fakeRequest
+        })
+        return request
     }
 
     factory.console = console
@@ -179,9 +236,9 @@
         return Object.prototype.toString.call(obj) === '[object Object]'
     }  
 
-    function tableCreater(obj){
+    function tableCreater(obj, tableWrap, showClearCall){
         let consoleItem = domCreater('console-item console-table-wrap', 'div')
-        let head = ['(index)']
+        let head = ['(key)']
         let trs = []
         if(typeof obj !== 'object') return diffLog(obj)
         if(isArray(obj)) {
@@ -248,11 +305,12 @@
                 } else if(typeof item === 'function') {
                     tr.push(item.toString())
                 }
+
                 trs.push(tr)
             })
         }
 
-                
+        if(showClearCall) head.push('(ctrl)')
         let table = domCreater('console-table', 'table')
         let thead = domCreater('console-thead', 'thead')
         head.map(th=>{
@@ -267,12 +325,19 @@
                 let tdEle = domCreater('console-td', 'td')
                 let td = tr[i] !== undefined ? tr[i] : ''
                 tdEle.innerText = td
+                if(showClearCall && i === head.length - 1) {
+                    tdEle.innerText = '清除'
+                    tdEle.style.textAlign = 'center'
+                    tdEle.addEventListener('click', e=>{
+                        showClearCall(tr, trEle)
+                    }, false)
+                }
                 trEle.appendChild(tdEle)
             }
             table.appendChild(trEle)
         })
         consoleItem.appendChild(table)
-        consoleItemWrap.appendChild(consoleItem)
+        tableWrap.appendChild(consoleItem)
     }
 
     function domCreater(className, tag){
