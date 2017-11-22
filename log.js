@@ -1,7 +1,8 @@
 (function(factory) {
-    let ConsoleLogConfig = {
-        fingerNum: window.ConsoleLogConfig ? window.ConsoleLogConfig.fingerNum : 5
-    }
+    let Config = Object.assign({
+        fingerNum: 5,
+        namespace: 'console'
+    }, window.ConsoleLogConfig)
     let console = window.console
     let diffAssert = console.assert
     let diffCount = console.count
@@ -16,16 +17,41 @@
 
     let diffXMLHttpRequest = XMLHttpRequest
 
-    let consoleNodeWrapper = domCreater('console-wrapper')
-    let consoleMask = domCreater('console-mask')
-    let consolePlugWrap = domCreater('console-plug-wrap')
-    let consoleItemWrap = domCreater('console-items console-items-wrap')
-    let consoleNetworkWrap = domCreater('console-networks console-items-wrap')
-    let consoleLocalstorageWrap = domCreater('console-localstorage console-items-wrap')
-    let consoleSessionStorageWrap = domCreater('console-sessionstorage console-items-wrap')
-    let consoleCookieWrap = domCreater('console-cookies console-items-wrap')
-    let consoleTabBar = domCreater('console-tab-bar')
-    let consoleInputWrap = domCreater('console-input-wrap')
+    let consoleNodeWrapper = domCreater(Config.namespace +'-wrapper')
+    let consoleMask = domCreater(Config.namespace +'-mask')
+    let consolePlugWrap = domCreater(Config.namespace +'-plug-wrap')
+    let consoleItemWrap = domCreater(Config.namespace +'-items console-items-wrap')
+    let consoleNetworkWrap = domCreater(Config.namespace +'-networks console-items-wrap')
+    let consoleLocalstorageWrap = domCreater(Config.namespace +'-localstorage console-items-wrap')
+    let consoleSessionStorageWrap = domCreater(Config.namespace +'-sessionstorage console-items-wrap')
+    let consoleCookieWrap = domCreater(Config.namespace +'-cookies console-items-wrap')
+    let consoleTabBar = domCreater(Config.namespace +'-tab-bar')
+    let consoleInputWrap = domCreater(Config.namespace +'-input-wrap')
+    let styleText = `
+        .${Config.namespace}-wrapper{ position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999999; font-family: 'Source Sans Pro', 'Lucida Grande', sans-serif; font-size: 12px;}
+        .${Config.namespace}-mask{position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #000; opacity: 0.3;}
+        .${Config.namespace}-plug-wrap{position: absolute; z-index: 2; bottom: 0; left: 0; right: 0; background-color: #fff; }
+        .${Config.namespace}-items-wrap{ max-height: 20em; min-height: 5em; overflow: hidden;  overflow-y: auto; -webkit-overflow-scrolling : touch; }
+        .${Config.namespace}-item{border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; margin-bottom: -1px; word-break: break-all;}
+        .${Config.namespace}-date{color: #0089ff;}
+        .${Config.namespace}-type-error{ color: red; background-color: #fff0f0; border-top-color: #fed7d8; border-bottom-color: #fed7d8; position: relative; z-index: 1;}
+        .${Config.namespace}-inline{padding-right: 0.5em;}
+        .${Config.namespace}-number{ color: rgb(29, 14, 204); }
+        .${Config.namespace}-table-wrap{padding: 5px;}
+        .${Config.namespace}-table{ width: 100%; background-color: #fff; border:1px solid #aaa; text-align: left; border-collapse: collapse; border-spacing: 0;}
+        .${Config.namespace}-th{background-color: #f3f3f3; font-weight: normal;}
+        .${Config.namespace}-tr:nth-child(2n+1){background-color: #f2f7fd;}
+        .${Config.namespace}-th, .${Config.namespace}-td, .${Config.namespace}-tr{border: 1px solid #aaa; border-spacing:0}
+        .${Config.namespace}-type-warn{ background-color: #fffbe7; border-top-color: #fff5c4; border-bottom-color: #fff5c4; color: #5b3a07; position: relative; z-index: 1;}
+        .${Config.namespace}-tab-bar{ line-height: 25px; background-color: #f3f3f3; border-bottom: 1px solid #b6b4b6; border-top: 1px solid #b6b4b6;}
+        .${Config.namespace}-tab{display: inline-block; padding: 0 4px; border-bottom: 1px solid #b6b4b6; margin-bottom: -1px; position: relative;}
+        .${Config.namespace}-tab:after{content: ' '; position: absolute; right: 0; height: 50%; width: 1px; background-color: #dcdcdc; top: 50%; transform: translate(0, -50%); -webkit-transform: translate(0, -50%);}
+        .${Config.namespace}-tab-current{border-bottom-color: #9abcf3; position: relative; z-index: 1; background-color: #e5e5e5;}
+        .${Config.namespace}-input-wrap{ position: relative; font-size: 0; border-top: 1px solid #b6b4b6;}
+        .${Config.namespace}-pre-code{ position: absolute; left: 0; top: 50%; transform: translate(0, -50%); -webkit-transform: translate(0, -50%); font-size: 12px;}
+        .${Config.namespace}-text-input{border:0 none; width: 100%; padding-left: 1em; font-size: 12px;}
+    `
+    let styleEle = domCreater('console-style', 'style')
 
     let Cookie = {
         get:function(key){
@@ -51,6 +77,9 @@
         }
     }
 
+    styleEle.innerHTML = styleText
+    document.head.appendChild(styleEle)
+
     consoleNodeWrapper.style.display = 'none'
 
     consoleNodeWrapper.appendChild(consoleMask)
@@ -69,14 +98,14 @@
     consoleSessionStorageWrap.style.display = 'none'
     consoleCookieWrap.style.display = 'none'
 
-    consoleTabBar.innerHTML = '<span class="console-tab console-tab-current">Console</span><span class="console-tab">Network</span><span class="console-tab">Localstorage</span><span class="console-tab">Sessionstorage</span><span class="console-tab">Cookies</span>'
-    consoleInputWrap.innerHTML = '<svg class="console-pre-code" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1292"><path d="M329.525 191.547l56.285-58.261 393.996 392.021-393.996 392.021-56.285-58.261 331.786-333.761z" fill="#333333" p-id="1293"></path></svg><input class="console-text-input">'
+    consoleTabBar.innerHTML = `<span class="${Config.namespace}-tab ${Config.namespace}-tab-current">Console</span><span class="${Config.namespace}-tab">Network</span><span class="${Config.namespace}-tab">Localstorage</span><span class="${Config.namespace}-tab">Sessionstorage</span><span class="${Config.namespace}-tab">Cookies</span>`
+    consoleInputWrap.innerHTML = `<svg class="${Config.namespace}-pre-code" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1292"><path d="M329.525 191.547l56.285-58.261 393.996 392.021-393.996 392.021-56.285-58.261 331.786-333.761z" fill="#333333" p-id="1293"></path></svg><input class="${Config.namespace}-text-input">`
 
     consoleTabBar.addEventListener('click', e=>{
-        consoleTabBar.querySelector('.console-tab-current').className = 'console-tab'
+        consoleTabBar.querySelector(`.${Config.namespace}-tab-current`).className = `${Config.namespace}-tab`
         let text = e.target.innerText
-        e.target.className = 'console-tab console-tab-current'
-        consoleNodeWrapper.querySelectorAll('.console-items-wrap').forEach(node=>{
+        e.target.className = `${Config.namespace}-tab ${Config.namespace}-tab-current`
+        consoleNodeWrapper.querySelectorAll(`.${Config.namespace}-items-wrap`).forEach(node=>{
             node.style.display = 'none'
         })
         consoleInputWrap.style.display = 'none'
@@ -115,7 +144,7 @@
     }, false)
 
     document.addEventListener('touchstart', e=>{
-        if(e.touches.length === ConsoleLogConfig.fingerNum) {
+        if(e.touches.length === Config.fingerNum) {
             consoleNodeWrapper.style.display = 'block'
             consoleItemWrap.scrollTop = 999999
             consoleNetworkWrap.scrollTop = 999999
@@ -237,7 +266,7 @@
     }  
 
     function tableCreater(obj, tableWrap, showClearCall){
-        let consoleItem = domCreater('console-item console-table-wrap', 'div')
+        let consoleItem = domCreater(`${Config.namespace}-item ${Config.namespace}-table-wrap`, 'div')
         let head = ['(key)']
         let trs = []
         if(typeof obj !== 'object') return diffLog(obj)
@@ -311,18 +340,18 @@
         }
 
         if(showClearCall) head.push('(ctrl)')
-        let table = domCreater('console-table', 'table')
-        let thead = domCreater('console-thead', 'thead')
+        let table = domCreater(`${Config.namespace}-table`, 'table')
+        let thead = domCreater(`${Config.namespace}-thead`, 'thead')
         head.map(th=>{
-            let thEle = domCreater('console-th', 'th')
+            let thEle = domCreater(`${Config.namespace}-th`, 'th')
             thEle.innerText = th
             thead.appendChild(thEle)
         })
         table.appendChild(thead)
         trs.map(tr=>{
-            let trEle = domCreater('console-tr', 'tr')
+            let trEle = domCreater(`${Config.namespace}-tr`, 'tr')
             for(let i = 0; i < head.length; i ++) {
-                let tdEle = domCreater('console-td', 'td')
+                let tdEle = domCreater(`${Config.namespace}-td`, 'td')
                 let td = tr[i] !== undefined ? tr[i] : ''
                 tdEle.innerText = td
                 if(showClearCall && i === head.length - 1) {
@@ -361,28 +390,28 @@
     }
 
     function consoleNetworkCreater(){
-        let itemClass = ['console-item']
+        let itemClass = [`${Config.namespace}-item`]
         let type = this.classType
-        if(type) itemClass.push('console-type-' + type)
+        if(type) itemClass.push(`${Config.namespace}-type-${type}`)
         let consoleItem = domCreater(itemClass.join(' '))
         let args = Array.prototype.slice.call(arguments)
-        let dateEle = domCreater('console-inline console-date', 'span')
+        let dateEle = domCreater(`${Config.namespace}-inline ${Config.namespace}-date`, 'span')
         dateEle.innerText = getTimeString()
         consoleItem.appendChild(dateEle)
         args.map(im=>{
             let ele
             if(typeof im === 'number') {
-                ele = domCreater('console-inline console-number', 'span')
+                ele = domCreater(`${Config.namespace}-inline ${Config.namespace}-number`, 'span')
                 ele.innerText = im
             } else if(typeof im === 'object') {
-                ele = domCreater('console-inline console-object', 'span')
+                ele = domCreater(`${Config.namespace}-inline ${Config.namespace}-object`, 'span')
                 if(im === window) {
                     ele.innerText = 'window object'
                 } else {
                     ele.innerText = JSON.stringify(im)
                 }
             } else {
-                ele = domCreater('console-inline console-other', 'span')
+                ele = domCreater(`${Config.namespace}-inline ${Config.namespace}-other`, 'span')
                 ele.innerText = im
             }
             consoleItem.appendChild(ele)
@@ -392,28 +421,28 @@
     }
 
     function consoleItemCreater(){
-        let itemClass = ['console-item']
+        let itemClass = [`${Config.namespace}-item`]
         let type = this.classType
-        if(type) itemClass.push('console-type-' + type)
+        if(type) itemClass.push(`${Config.namespace}-type-${type}`)
         let consoleItem = domCreater(itemClass.join(' '))
         let args = Array.prototype.slice.call(arguments)
-        let dateEle = domCreater('console-inline console-date', 'span')
+        let dateEle = domCreater(`${Config.namespace}-inline ${Config.namespace}-date`, 'span')
         dateEle.innerText = getTimeString()
         consoleItem.appendChild(dateEle)
         args.map(im=>{
             let ele
             if(typeof im === 'number') {
-                ele = domCreater('console-inline console-number', 'span')
+                ele = domCreater(`${Config.namespace}-inline ${Config.namespace}-number`, 'span')
                 ele.innerText = im
             } else if(typeof im === 'object') {
-                ele = domCreater('console-inline console-object', 'span')
+                ele = domCreater(`${Config.namespace}-inline ${Config.namespace}-object`, 'span')
                 if(im === window) {
                     ele.innerText = 'window object'
                 } else {
                     ele.innerText = JSON.stringify(im)
                 }
             } else {
-                ele = domCreater('console-inline console-other', 'span')
+                ele = domCreater(`${Config.namespace}-inline ${Config.namespace}-other`, 'span')
                 ele.innerText = im
             }
             consoleItem.appendChild(ele)
